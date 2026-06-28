@@ -72,7 +72,7 @@ function AdminReviewsPage() {
 
   const handleApprove = async (id: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("reviews")
         .update({ is_approved: true })
         .eq("id", id);
@@ -90,7 +90,7 @@ function AdminReviewsPage() {
 
   const handleReject = async (id: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("reviews")
         .update({ is_approved: false })
         .eq("id", id);
@@ -109,7 +109,7 @@ function AdminReviewsPage() {
   const handleFeature = async (id: string) => {
     try {
       const review = reviews.find((r) => r.id === id);
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("reviews")
         .update({ is_featured: !review?.is_featured })
         .eq("id", id);

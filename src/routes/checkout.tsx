@@ -85,6 +85,12 @@ function CheckoutPage() {
 
       const order = await createOrder(orderData);
 
+      if (!order) {
+        toast.error("Failed to create order. Please try again.");
+        setIsProcessing(false);
+        return;
+      }
+
       // Initialize Razorpay checkout
       const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID || "";
 
@@ -96,7 +102,7 @@ function CheckoutPage() {
 
       const checkoutOptions = {
         key: razorpayKeyId,
-        amount: Math.round(subtotal * 100), // Convert to paise
+        amount: Math.round(subtotal * 100),
         currency: "INR",
         order_id: order.id,
         name: "Luxury United",

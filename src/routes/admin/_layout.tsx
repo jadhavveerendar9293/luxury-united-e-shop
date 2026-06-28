@@ -15,7 +15,7 @@ import {
   X,
 } from 'lucide-react';
 
-export const Route = createFileRoute('/admin')({
+export const Route = createFileRoute('/admin/_layout')({
   component: AdminLayout,
 });
 

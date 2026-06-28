@@ -113,47 +113,48 @@ function AdminSettingsPage() {
       if (error && error.code !== "PGRST116") throw error;
 
       if (data) {
+        const settingsData = data as Tables<"website_settings">;
         setSettings({
-          siteName: data.site_name || "Luxury United",
-          logoUrl: data.logo_url || "",
-          faviconUrl: data.favicon_url || "",
-          contactEmail: data.contact_email || "",
-          contactPhone: data.contact_phone || "",
-          whatsappNumber: data.whatsapp_number || "",
-          addressLine1: data.address_line1 || "",
-          addressLine2: data.address_line2 || "",
-          addressCity: data.address_city || "",
-          addressState: data.address_state || "",
-          addressPostalCode: data.address_postal_code || "",
-          addressCountry: data.address_country || "",
-          instagramUrl: data.instagram_url || "",
-          facebookUrl: data.facebook_url || "",
-          twitterUrl: data.twitter_url || "",
-          pinterestUrl: data.pinterest_url || "",
-          linkedinUrl: data.linkedin_url || "",
-          youtubeUrl: data.youtube_url || "",
-          heroTitle: data.hero_title || "",
-          heroSubtitle: data.hero_subtitle || "",
-          heroCta: data.hero_cta_text || "",
-          heroCtaLink: data.hero_cta_link || "",
-          footerNewsletter: data.footer_newsletter_title || "",
-          footerAbout: data.footer_about_text || "",
-          primaryColor: data.primary_color || "#D4AF37",
-          darkModeEnabled: data.enable_dark_mode ?? true,
-          enableReviews: data.enable_reviews ?? true,
-          enableWishlist: data.enable_wishlist ?? true,
-          enableSearch: data.enable_search ?? true,
-          enableNewsletter: data.enable_newsletter ?? true,
-          currencyCode: data.currency_code || "USD",
-          currencySymbol: data.currency_symbol || "$",
-          privacyPolicy: data.privacy_policy || "",
-          termsConditions: data.terms_conditions || "",
-          refundPolicy: data.refund_policy || "",
-          shippingPolicy: data.shipping_policy || "",
+          siteName: settingsData.site_name || "Luxury United",
+          logoUrl: settingsData.logo_url || "",
+          faviconUrl: settingsData.favicon_url || "",
+          contactEmail: settingsData.contact_email || "",
+          contactPhone: settingsData.contact_phone || "",
+          whatsappNumber: settingsData.whatsapp_number || "",
+          addressLine1: settingsData.address_line1 || "",
+          addressLine2: settingsData.address_line2 || "",
+          addressCity: settingsData.address_city || "",
+          addressState: settingsData.address_state || "",
+          addressPostalCode: settingsData.address_postal_code || "",
+          addressCountry: settingsData.address_country || "",
+          instagramUrl: settingsData.instagram_url || "",
+          facebookUrl: settingsData.facebook_url || "",
+          twitterUrl: settingsData.twitter_url || "",
+          pinterestUrl: settingsData.pinterest_url || "",
+          linkedinUrl: settingsData.linkedin_url || "",
+          youtubeUrl: settingsData.youtube_url || "",
+          heroTitle: settingsData.hero_title || "",
+          heroSubtitle: settingsData.hero_subtitle || "",
+          heroCta: settingsData.hero_cta_text || "",
+          heroCtaLink: settingsData.hero_cta_link || "",
+          footerNewsletter: settingsData.footer_newsletter_title || "",
+          footerAbout: settingsData.footer_about_text || "",
+          primaryColor: settingsData.primary_color || "#D4AF37",
+          darkModeEnabled: settingsData.enable_dark_mode ?? true,
+          enableReviews: settingsData.enable_reviews ?? true,
+          enableWishlist: settingsData.enable_wishlist ?? true,
+          enableSearch: settingsData.enable_search ?? true,
+          enableNewsletter: settingsData.enable_newsletter ?? true,
+          currencyCode: settingsData.currency_code || "USD",
+          currencySymbol: settingsData.currency_symbol || "$",
+          privacyPolicy: settingsData.privacy_policy || "",
+          termsConditions: settingsData.terms_conditions || "",
+          refundPolicy: settingsData.refund_policy || "",
+          shippingPolicy: settingsData.shipping_policy || "",
         });
 
-        if (data.faq_content && typeof data.faq_content === "object") {
-          setFaqs(data.faq_content as any);
+        if (settingsData.faq_content && typeof settingsData.faq_content === "object") {
+          setFaqs(settingsData.faq_content as any);
         }
       }
     } catch (error) {
@@ -214,13 +215,14 @@ function AdminSettingsPage() {
       };
 
       if (existing) {
-        const { error } = await supabase
+        const existingData = existing as Tables<"website_settings">;
+        const { error } = await (supabase as any)
           .from("website_settings")
           .update(updateData)
-          .eq("id", existing.id);
+          .eq("id", existingData.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("website_settings").insert([updateData]);
+        const { error } = await (supabase as any).from("website_settings").insert([updateData]);
         if (error) throw error;
       }
 

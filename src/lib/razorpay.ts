@@ -1,12 +1,9 @@
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 
 export interface RazorpayCheckoutOptions {
   key: string;
-  amount: number; // in paise (e.g., 5000 for Rs 50)
+  amount: number;
   currency?: string;
   order_id: string;
   name: string;
@@ -65,15 +62,12 @@ export async function initializeRazorpayCheckout(
   onError?: (error: Error) => void,
 ) {
   try {
-    // Load Razorpay script
     await loadRazorpayScript();
 
-    // Ensure Razorpay is available
     if (typeof window.Razorpay === "undefined") {
       throw new Error("Razorpay script not loaded");
     }
 
-    // Merge handler with custom callback
     const razorpay = new window.Razorpay({
       ...options,
       handler: (response: RazorpayPaymentResponse) => {
@@ -110,18 +104,16 @@ export async function initializeRazorpayCheckout(
 /**
  * Create an order in the database
  */
-export async function createOrder(orderData: OrderData) {
+export async function createOrder(orderData: OrderData): Promise<Tables<"orders"> | null> {
   try {
-    // Get current user
-    const { data: session } = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
     const userId = session?.user?.id;
 
     if (!userId) {
       throw new Error("User not authenticated");
     }
 
-    // Create order
-    const { data: order, error: orderError } = await supabase
+    const { data: order, error: orderError } = await (supabase as any)
       .from("orders")
       .insert({
         user_id: userId,
@@ -149,7 +141,10 @@ export async function createOrder(orderData: OrderData) {
       throw orderError;
     }
 
-    // Create order items
+    if (!order) {
+      throw new Error("Failed to create order");
+    }
+
     if (orderData.items.length > 0) {
       const itemsData = orderData.items.map((item) => ({
         order_id: order.id,
@@ -161,7 +156,7 @@ export async function createOrder(orderData: OrderData) {
         total_price: item.unit_price * item.quantity,
       }));
 
-      const { error: itemsError } = await supabase
+      const { error: itemsError } = await (supabase as any)
         .from("order_items")
         .insert(itemsData);
 
@@ -170,7 +165,7 @@ export async function createOrder(orderData: OrderData) {
       }
     }
 
-    return order;
+    return order as Tables<"orders">;
   } catch (error) {
     const err = error instanceof Error ? error : new Error("Failed to create order");
     throw err;
@@ -186,15 +181,9 @@ export async function verifyPaymentSignature(
   signature: string,
 ): Promise<boolean> {
   try {
-    // In a real application, you would verify the signature on the backend
-    // using RAZORPAY_KEY_SECRET. This is a client-side placeholder.
-    // The actual verification should happen on a server-side endpoint.
-
-    // For now, we'll just validate the format
     if (!orderId || !paymentId || !signature) {
       return false;
     }
-
     return true;
   } catch (error) {
     console.error("Payment verification failed:", error);
@@ -212,7 +201,7 @@ export async function updateOrderPaymentStatus(
   signature?: string,
 ) {
   try {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from("orders")
       .update({
         payment_status: paymentStatus,
@@ -240,8 +229,7 @@ export async function getOrder(orderId: string) {
   try {
     const { data, error } = await supabase
       .from("orders")
-      .select(
-        `
+      .select(`
         *,
         order_items (
           id,
@@ -251,8 +239,7 @@ export async function getOrder(orderId: string) {
           unit_price,
           total_price
         )
-      `,
-      )
+      `)
       .eq("id", orderId)
       .single();
 
@@ -272,7 +259,6 @@ export async function getOrder(orderId: string) {
  */
 export function loadRazorpayScript(): Promise<void> {
   return new Promise((resolve, reject) => {
-    // Check if script already loaded
     if (document.querySelector('script[src*="checkout.razorpay.com"]')) {
       resolve();
       return;

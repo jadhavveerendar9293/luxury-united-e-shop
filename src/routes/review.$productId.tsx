@@ -86,7 +86,7 @@ function ReviewPage() {
           is_featured: false,
           helpful_count: 0,
         },
-      ]);
+      ] as any);
 
       if (error) throw error;
 

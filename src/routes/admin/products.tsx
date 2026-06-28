@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Plus, Search, Trash2, CreditCard as Edit2, Star, Badge, Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
 
 export const Route = createFileRoute('/admin/products')({
@@ -25,10 +26,11 @@ function ProductsManagement() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProducts(data || []);
-      setFilteredProducts(data || []);
+      setProducts((data || []) as Tables<'products'>[]);
+      setFilteredProducts((data || []) as Tables<'products'>[]);
     } catch (error) {
       console.error('Error fetching products:', error);
+      toast.error('Failed to load products');
     } finally {
       setLoading(false);
     }
@@ -75,18 +77,20 @@ function ProductsManagement() {
   const handleSaveProduct = async () => {
     try {
       if (editingId) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('products')
           .update(formData)
           .eq('id', editingId);
 
         if (error) throw error;
+        toast.success('Product updated');
       } else {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('products')
-          .insert([formData]);
+          .insert(formData);
 
         if (error) throw error;
+        toast.success('Product created');
       }
 
       await fetchProducts();
@@ -95,7 +99,7 @@ function ProductsManagement() {
       setEditingId(null);
     } catch (error) {
       console.error('Error saving product:', error);
-      alert('Failed to save product');
+      toast.error('Failed to save product');
     }
   };
 
@@ -103,16 +107,17 @@ function ProductsManagement() {
     if (!confirm('Are you sure you want to delete this product?')) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('products')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
+      toast.success('Product deleted');
       await fetchProducts();
     } catch (error) {
       console.error('Error deleting product:', error);
-      alert('Failed to delete product');
+      toast.error('Failed to delete product');
     }
   };
 
@@ -122,7 +127,7 @@ function ProductsManagement() {
     currentValue: boolean
   ) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('products')
         .update({ [flag]: !currentValue })
         .eq('id', productId);
@@ -131,8 +136,13 @@ function ProductsManagement() {
       await fetchProducts();
     } catch (error) {
       console.error('Error updating product:', error);
+      toast.error('Failed to update product');
     }
   };
+
+  if (loading) {
+    return <div className="text-center py-12 text-pearl/50">Loading products...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -166,11 +176,9 @@ function ProductsManagement() {
       </div>
 
       {/* Products Table */}
-      {loading ? (
-        <div className="text-center py-12 text-pearl/50">Loading products...</div>
-      ) : filteredProducts.length === 0 ? (
+      {filteredProducts.length === 0 ? (
         <div className="text-center py-12 text-pearl/50">
-          {products.length === 0 ? 'No products yet' : 'No matching products'}
+          {products.length === 0 ? 'No products yet. Click "Add Product" to create one.' : 'No matching products'}
         </div>
       ) : (
         <div className="bg-pearl/5 border border-pearl/10 rounded-lg overflow-hidden overflow-x-auto">
@@ -216,9 +224,7 @@ function ProductsManagement() {
                     <div className="flex gap-2">
                       {product.is_featured && (
                         <button
-                          onClick={() =>
-                            toggleFlag(product.id, 'is_featured', product.is_featured)
-                          }
+                          onClick={() => toggleFlag(product.id, 'is_featured', product.is_featured)}
                           title="Featured"
                           className="text-champagne hover:opacity-70"
                         >
@@ -227,9 +233,7 @@ function ProductsManagement() {
                       )}
                       {product.is_best_seller && (
                         <button
-                          onClick={() =>
-                            toggleFlag(product.id, 'is_best_seller', product.is_best_seller)
-                          }
+                          onClick={() => toggleFlag(product.id, 'is_best_seller', product.is_best_seller)}
                           title="Best Seller"
                           className="text-red-400 hover:opacity-70"
                         >
@@ -238,9 +242,7 @@ function ProductsManagement() {
                       )}
                       {product.is_new_arrival && (
                         <button
-                          onClick={() =>
-                            toggleFlag(product.id, 'is_new_arrival', product.is_new_arrival)
-                          }
+                          onClick={() => toggleFlag(product.id, 'is_new_arrival', product.is_new_arrival)}
                           title="New Arrival"
                           className="text-blue-400 hover:opacity-70"
                         >
@@ -312,10 +314,10 @@ function ProductsManagement() {
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="w-full bg-pearl/5 border border-pearl/10 px-4 py-2 rounded text-pearl focus:outline-none focus:border-champagne"
                   >
-                    <option>rings</option>
-                    <option>earrings</option>
-                    <option>bracelets</option>
-                    <option>necklaces</option>
+                    <option value="rings">Rings</option>
+                    <option value="earrings">Earrings</option>
+                    <option value="bracelets">Bracelets</option>
+                    <option value="necklaces">Necklaces</option>
                   </select>
                 </div>
                 <div>
@@ -323,9 +325,7 @@ function ProductsManagement() {
                   <input
                     type="number"
                     value={formData.price || 0}
-                    onChange={(e) =>
-                      setFormData({ ...formData, price: parseFloat(e.target.value) })
-                    }
+                    onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
                     className="w-full bg-pearl/5 border border-pearl/10 px-4 py-2 rounded text-pearl placeholder:text-pearl/30 focus:outline-none focus:border-champagne"
                   />
                 </div>
@@ -337,9 +337,7 @@ function ProductsManagement() {
                   <input
                     type="number"
                     value={formData.stock || 0}
-                    onChange={(e) =>
-                      setFormData({ ...formData, stock: parseInt(e.target.value) })
-                    }
+                    onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) })}
                     className="w-full bg-pearl/5 border border-pearl/10 px-4 py-2 rounded text-pearl placeholder:text-pearl/30 focus:outline-none focus:border-champagne"
                   />
                 </div>
@@ -369,9 +367,7 @@ function ProductsManagement() {
                   <input
                     type="checkbox"
                     checked={formData.is_featured || false}
-                    onChange={(e) =>
-                      setFormData({ ...formData, is_featured: e.target.checked })
-                    }
+                    onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
                     className="rounded"
                   />
                   <span className="text-sm text-pearl">Featured</span>
@@ -380,9 +376,7 @@ function ProductsManagement() {
                   <input
                     type="checkbox"
                     checked={formData.is_best_seller || false}
-                    onChange={(e) =>
-                      setFormData({ ...formData, is_best_seller: e.target.checked })
-                    }
+                    onChange={(e) => setFormData({ ...formData, is_best_seller: e.target.checked })}
                     className="rounded"
                   />
                   <span className="text-sm text-pearl">Best Seller</span>
@@ -391,9 +385,7 @@ function ProductsManagement() {
                   <input
                     type="checkbox"
                     checked={formData.is_new_arrival || false}
-                    onChange={(e) =>
-                      setFormData({ ...formData, is_new_arrival: e.target.checked })
-                    }
+                    onChange={(e) => setFormData({ ...formData, is_new_arrival: e.target.checked })}
                     className="rounded"
                   />
                   <span className="text-sm text-pearl">New Arrival</span>

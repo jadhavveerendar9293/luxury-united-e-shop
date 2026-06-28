@@ -208,7 +208,7 @@ export type Database = {
           created_at?: string
         }
         Relationships: [
-          { target_table: 'profiles'; source_column: 'user_id'; target_column: 'user_id' }
+          { target_table: 'profiles'; source_column: 'user_id'; target_column: 'user_id' },
           { target_table: 'products'; source_column: 'product_id'; target_column: 'id' }
         ]
       }
@@ -238,7 +238,7 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          { target_table: 'profiles'; source_column: 'user_id'; target_column: 'user_id' }
+          { target_table: 'profiles'; source_column: 'user_id'; target_column: 'user_id' },
           { target_table: 'products'; source_column: 'product_id'; target_column: 'id' }
         ]
       }
@@ -375,7 +375,7 @@ export type Database = {
           created_at?: string
         }
         Relationships: [
-          { target_table: 'orders'; source_column: 'order_id'; target_column: 'id' }
+          { target_table: 'orders'; source_column: 'order_id'; target_column: 'id' },
           { target_table: 'products'; source_column: 'product_id'; target_column: 'id' }
         ]
       }
@@ -420,7 +420,7 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          { target_table: 'products'; source_column: 'product_id'; target_column: 'id' }
+          { target_table: 'products'; source_column: 'product_id'; target_column: 'id' },
           { target_table: 'profiles'; source_column: 'user_id'; target_column: 'user_id' }
         ]
       }

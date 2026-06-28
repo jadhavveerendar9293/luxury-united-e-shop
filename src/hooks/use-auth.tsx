@@ -39,14 +39,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .maybeSingle();
 
     if (!error && data) {
-      setProfile(data);
+      const profile = data as Tables<'profiles'>;
+      setProfile(profile);
       setUser({
-        id: data.user_id,
-        email: data.email,
-        role: data.role,
-        full_name: data.full_name,
-        phone: data.phone,
-        avatar_url: data.avatar_url,
+        id: profile.user_id,
+        email: profile.email,
+        role: profile.role,
+        full_name: profile.full_name,
+        phone: profile.phone,
+        avatar_url: profile.avatar_url,
       });
     }
   }, []);
@@ -112,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateProfile = useCallback(async (updates: Partial<Tables<'profiles'>>) => {
     if (!user) return { error: new Error('Not authenticated') };
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('profiles')
       .update(updates)
       .eq('user_id', user.id);

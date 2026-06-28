@@ -46,20 +46,23 @@ function AdminCustomersPage() {
 
       if (error) throw error;
 
+      const profiles = (data || []) as Tables<"profiles">[];
+
       // Fetch order data for each customer
       const customersWithOrders = await Promise.all(
-        (data || []).map(async (customer) => {
+        profiles.map(async (customer) => {
           const { data: orders, error: orderError } = await supabase
             .from("orders")
             .select("total, created_at")
             .eq("user_id", customer.user_id);
 
           if (!orderError && orders) {
-            const total_spent = orders.reduce(
+            const orderList = orders as { total: number; created_at: string }[];
+            const total_spent = orderList.reduce(
               (sum, order) => sum + (order.total || 0),
               0
             );
-            const last_order = orders.sort(
+            const last_order = orderList.sort(
               (a, b) =>
                 new Date(b.created_at).getTime() -
                 new Date(a.created_at).getTime()
@@ -67,7 +70,7 @@ function AdminCustomersPage() {
 
             return {
               ...customer,
-              order_count: orders.length,
+              order_count: orderList.length,
               total_spent,
               last_order_date: last_order?.created_at,
             };

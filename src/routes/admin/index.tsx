@@ -29,8 +29,9 @@ function AdminDashboard() {
           .select('*')
           .eq('payment_status', 'paid');
 
-        const totalOrders = orders?.length || 0;
-        const totalRevenue = orders?.reduce((sum, order) => sum + order.total, 0) || 0;
+        const orderList = (orders || []) as Tables<'orders'>[];
+        const totalOrders = orderList.length;
+        const totalRevenue = orderList.reduce((sum, order) => sum + order.total, 0);
 
         // Get total products
         const { count: productCount } = await supabase
@@ -66,8 +67,8 @@ function AdminDashboard() {
           lowStockProducts: lowStock?.length || 0,
         });
 
-        setRecentOrders(recent || []);
-        setLowStockItems(lowStock || []);
+        setRecentOrders((recent || []) as Tables<'orders'>[]);
+        setLowStockItems((lowStock || []) as Tables<'products'>[]);
       } catch (error) {
         console.error('Error fetching stats:', error);
       } finally {
