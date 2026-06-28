@@ -20,6 +20,7 @@ import { Toaster } from "sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { PageShell } from "@/components/site/PageShell";
+import { useProductsRealtime } from "@/lib/products-api";
 
 function NotFoundComponent() {
   return (
@@ -113,8 +114,17 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
+      <RealtimeBridge />
       <Outlet />
       <Toaster theme="dark" position="bottom-right" toastOptions={{ style: { background: "#0A0A0B", border: "1px solid rgba(255,255,255,0.08)", color: "#FDFCFB" } }} />
     </QueryClientProvider>
   );
+}
+
+function RealtimeBridge() {
+  // Subscribes once to product table changes and invalidates queries automatically.
+  // Must live inside QueryClientProvider.
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useProductsRealtime();
+  return null;
 }
