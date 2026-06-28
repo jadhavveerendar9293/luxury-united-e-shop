@@ -14,7 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      products: {
+        Row: {
+          category: string
+          collection: string | null
+          compare_at_price: number | null
+          created_at: string
+          description: string
+          details: string[]
+          id: string
+          images: string[]
+          is_best_seller: boolean
+          is_featured: boolean
+          is_new_arrival: boolean
+          name: string
+          popularity: number
+          price: number
+          rating: number
+          reviews_count: number
+          sku: string | null
+          slug: string
+          stock: number
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          collection?: string | null
+          compare_at_price?: number | null
+          created_at?: string
+          description?: string
+          details?: string[]
+          id?: string
+          images?: string[]
+          is_best_seller?: boolean
+          is_featured?: boolean
+          is_new_arrival?: boolean
+          name: string
+          popularity?: number
+          price?: number
+          rating?: number
+          reviews_count?: number
+          sku?: string | null
+          slug: string
+          stock?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          collection?: string | null
+          compare_at_price?: number | null
+          created_at?: string
+          description?: string
+          details?: string[]
+          id?: string
+          images?: string[]
+          is_best_seller?: boolean
+          is_featured?: boolean
+          is_new_arrival?: boolean
+          name?: string
+          popularity?: number
+          price?: number
+          rating?: number
+          reviews_count?: number
+          sku?: string | null
+          slug?: string
+          stock?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
