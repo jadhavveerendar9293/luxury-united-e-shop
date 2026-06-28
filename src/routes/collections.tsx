@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell, PageHeader } from "@/components/site/PageShell";
 import { Reveal } from "@/components/site/Reveal";
 import { useCollections } from "@/lib/products-api";
-import bannerImg from "@/assets/banner-editorial.jpg";
+const bannerImg = "https://images.pexels.com/photos/691046/pexels-photo-691046.jpeg?auto=compress&cs=tinysrgb&w=1600";
 
 export const Route = createFileRoute("/collections")({
   head: () => ({

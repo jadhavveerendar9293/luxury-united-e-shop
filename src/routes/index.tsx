@@ -5,8 +5,8 @@ import { PageShell } from "@/components/site/PageShell";
 import { ProductGrid } from "@/components/site/ProductGrid";
 import { Reveal } from "@/components/site/Reveal";
 import { useProducts, useCategories, useCollections, useWebsiteSettings } from "@/lib/products-api";
-import heroImg from "@/assets/hero-necklace.jpg";
-import bannerImg from "@/assets/banner-editorial.jpg";
+const heroImg = "https://images.pexels.com/photos/1191531/pexels-photo-1191531.jpeg?auto=compress&cs=tinysrgb&w=1600";
+const bannerImg = "https://images.pexels.com/photos/691046/pexels-photo-691046.jpeg?auto=compress&cs=tinysrgb&w=1600";
 
 export const Route = createFileRoute("/")({
   head: () => ({
