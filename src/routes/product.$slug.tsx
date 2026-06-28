@@ -6,14 +6,14 @@ import { toast } from "sonner";
 import { PageShell } from "@/components/site/PageShell";
 import { ProductCard } from "@/components/site/ProductCard";
 import { Reveal } from "@/components/site/Reveal";
-import { getProduct, getRelated } from "@/lib/products";
+import { getProduct, getRelated, type Product } from "@/lib/products";
 import { formatPrice, useCart, useWishlist } from "@/lib/store";
 
 export const Route = createFileRoute("/product/$slug")({
-  loader: ({ params }) => {
+  loader: ({ params }): { product: Product } => {
     const product = getProduct(params.slug);
     if (!product) throw notFound();
-    return { product } as { product: NonNullable<ReturnType<typeof getProduct>> };
+    return { product };
   },
   head: ({ loaderData }) => ({
     meta: [
