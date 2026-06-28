@@ -163,7 +163,8 @@ async function fetchCollections(): Promise<CollectionData[]> {
 export const productsQueryOptions = queryOptions({
   queryKey: ["products"],
   queryFn: fetchAllProducts,
-  staleTime: 30_000,
+  staleTime: 120_000,
+  gcTime: 300_000,
 });
 
 export const productQueryOptions = (slug: string) =>
@@ -176,13 +177,15 @@ export const productQueryOptions = (slug: string) =>
 export const categoriesQueryOptions = queryOptions({
   queryKey: ["categories"],
   queryFn: fetchCategories,
-  staleTime: 60_000,
+  staleTime: 300_000,
+  gcTime: 600_000,
 });
 
 export const collectionsQueryOptions = queryOptions({
   queryKey: ["collections"],
   queryFn: fetchCollections,
-  staleTime: 60_000,
+  staleTime: 300_000,
+  gcTime: 600_000,
 });
 
 export function useProducts() {
@@ -237,7 +240,8 @@ async function fetchWebsiteSettings(): Promise<Tables<"website_settings"> | null
 export const websiteSettingsQueryOptions = queryOptions({
   queryKey: ["websiteSettings"],
   queryFn: fetchWebsiteSettings,
-  staleTime: 300_000,
+  staleTime: 600_000,
+  gcTime: 1_200_000,
 });
 
 export function useWebsiteSettings() {

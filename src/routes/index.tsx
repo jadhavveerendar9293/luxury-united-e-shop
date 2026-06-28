@@ -32,12 +32,15 @@ function Home() {
   const featured = bestSellers.length > 0 ? bestSellers : products.slice(0, 4);
   const newArrivals = products.filter((p) => p.isNewArrival).slice(0, 4);
 
-  const heroTitle = settings?.hero_title || "Timeless";
+  const heroTitle = settings?.hero_title || "Timeless Excellence";
   const heroSubtitle = settings?.hero_subtitle || "Curated, hand-crafted pieces designed for those who seek the extraordinary.";
   const heroCollectionName = settings?.hero_collection_name || "The Eternal Collection";
   const heroCtaText = settings?.hero_cta_text || "Explore Now";
   const heroCtaLink = settings?.hero_cta_link || "/shop";
-  const siteName = settings?.site_name || "Luxury United";
+
+  const heroWords = heroTitle.split(" ");
+  const heroFirstWords = heroWords.slice(0, -1).join(" ");
+  const heroLastWord = heroWords[heroWords.length - 1];
 
   return (
     <PageShell>
@@ -48,6 +51,7 @@ function Home() {
             <motion.img
               src={heroImg}
               alt="The Eternal Collection"
+              fetchPriority="high"
               initial={{ scale: 1.08 }}
               animate={{ scale: 1 }}
               transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
@@ -64,13 +68,8 @@ function Home() {
                 >
                   <p className="eyebrow text-champagne mb-6">{heroCollectionName}</p>
                   <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl leading-[1.02] mb-6">
-                    {heroTitle.split(' ').map((word, i, arr) => (
-                      i === arr.length - 1 ? (
-                        <span key={i} className="italic text-champagne">{word}</span>
-                      ) : (
-                        <span key={i}>{word} </span>
-                      )
-                    ))}
+                    {heroFirstWords && <span>{heroFirstWords}<br /></span>}
+                    <span className="italic text-champagne">{heroLastWord}</span>
                   </h1>
                   <p className="text-pearl/60 text-sm md:text-base max-w-sm mb-8 leading-relaxed">
                     {heroSubtitle}
@@ -111,7 +110,7 @@ function Home() {
           </div>
         </Reveal>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {collections.map((c, i) => (
+          {collections.slice(0, 3).map((c, i) => (
             <Reveal key={c.id} delay={i * 0.08}>
               <Link to="/collections" className="block group">
                 <div className="relative aspect-[3/4] overflow-hidden bg-card mb-4">
