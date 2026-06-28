@@ -88,7 +88,7 @@ function ProductPage() {
               />
             </div>
             <div className="grid grid-cols-4 gap-3">
-              {product.images.map((img, i) => (
+              {product.images.map((img: string, i: number) => (
                 <button
                   key={i}
                   onClick={() => setActiveImg(i)}
@@ -171,7 +171,7 @@ function ProductPage() {
             <div>
               <h3 className="eyebrow text-pearl mb-4">Details</h3>
               <ul className="space-y-2 text-sm text-pearl/60">
-                {product.details.map((d) => (
+                {product.details.map((d: string) => (
                   <li key={d} className="flex gap-3"><span className="text-champagne">—</span>{d}</li>
                 ))}
               </ul>
