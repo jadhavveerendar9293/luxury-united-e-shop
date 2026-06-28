@@ -2,9 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { ArrowRight, Star } from "lucide-react";
 import { PageShell } from "@/components/site/PageShell";
-import { ProductCard } from "@/components/site/ProductCard";
+import { ProductGrid } from "@/components/site/ProductGrid";
 import { Reveal } from "@/components/site/Reveal";
-import { products, categories, collections } from "@/lib/products";
+import { categories, collections } from "@/lib/products";
+import { useProducts } from "@/lib/products-api";
 import heroImg from "@/assets/hero-necklace.jpg";
 import bannerImg from "@/assets/banner-editorial.jpg";
 
@@ -21,8 +22,13 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const bestSellers = products.slice(0, 4);
-  const newArrivals = products.filter((p) => p.badge === "New" || p.badge === "Limited");
+  const { data: products = [], isLoading } = useProducts();
+
+  const bestSellers = products
+    .filter((p) => p.isBestSeller)
+    .slice(0, 4);
+  const featured = bestSellers.length > 0 ? bestSellers : products.slice(0, 4);
+  const newArrivals = products.filter((p) => p.isNewArrival).slice(0, 4);
 
   return (
     <PageShell>
@@ -156,11 +162,13 @@ function Home() {
             </Link>
           </div>
         </Reveal>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-12">
-          {bestSellers.map((p, i) => (
-            <ProductCard key={p.id} product={p} index={i} />
-          ))}
-        </div>
+        <ProductGrid
+          products={featured}
+          isLoading={isLoading}
+          columns="featured"
+          emptyTitle="No Products Available"
+          emptyDescription="The collection is being prepared. Please return shortly."
+        />
       </section>
 
       {/* Promotional Banner */}
@@ -202,11 +210,7 @@ function Home() {
               </div>
             </div>
           </Reveal>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-12">
-            {newArrivals.map((p, i) => (
-              <ProductCard key={p.id} product={p} index={i} />
-            ))}
-          </div>
+          <ProductGrid products={newArrivals} columns="featured" />
         </section>
       )}
 

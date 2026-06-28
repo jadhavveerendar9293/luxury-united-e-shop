@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
 import { PageShell, PageHeader } from "@/components/site/PageShell";
-import { ProductCard } from "@/components/site/ProductCard";
-import { products } from "@/lib/products";
+import { ProductGrid } from "@/components/site/ProductGrid";
+import { useProducts } from "@/lib/products-api";
 import { useWishlist } from "@/lib/store";
 
 export const Route = createFileRoute("/wishlist")({
@@ -12,23 +12,33 @@ export const Route = createFileRoute("/wishlist")({
 
 function WishlistPage() {
   const ids = useWishlist((s) => s.ids);
+  const { data: products = [], isLoading } = useProducts();
   const items = products.filter((p) => ids.includes(p.id));
 
   return (
     <PageShell>
       <PageHeader eyebrow="Saved" title="Wishlist" description="Pieces you're considering." />
       <section className="container-luxury pb-24 md:pb-32">
-        {items.length === 0 ? (
+        {!isLoading && ids.length === 0 ? (
           <div className="text-center py-16">
             <Heart className="size-10 text-champagne mx-auto mb-6" />
             <p className="font-serif text-2xl mb-3">Nothing saved yet</p>
             <p className="text-pearl/50 mb-8">Tap the heart on any piece to save it here.</p>
-            <Link to="/shop" className="inline-block bg-champagne text-obsidian px-10 py-4 eyebrow">Browse Shop</Link>
+            <Link
+              to="/shop"
+              className="inline-block bg-champagne text-obsidian px-10 py-4 eyebrow"
+            >
+              Browse Shop
+            </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-12">
-            {items.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
-          </div>
+          <ProductGrid
+            products={items}
+            isLoading={isLoading}
+            columns="featured"
+            emptyTitle="Saved pieces unavailable"
+            emptyDescription="The items you saved are no longer in the catalog."
+          />
         )}
       </section>
     </PageShell>
