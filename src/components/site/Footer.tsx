@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useWebsiteSettings } from "@/lib/products-api";
 
 const COLS = [
   {
@@ -36,12 +37,19 @@ const COLS = [
 ] as const;
 
 export function Footer() {
+  const { data: settings } = useWebsiteSettings();
+
+  const newsletterTitle = settings?.footer_newsletter_title || "Join the Circle";
+  const newsletterSubtitle = settings?.footer_newsletter_subtitle || "Private access to new pieces.";
+  const siteName = settings?.site_name || "Luxury United";
+  const footerCopyright = settings?.footer_copyright || `© ${new Date().getFullYear()} Luxury United International`;
+
   return (
     <footer className="mt-32 border-t border-pearl/5 bg-obsidian">
       <div className="container-luxury pt-20 pb-10">
         <div className="max-w-md mb-16">
-          <span className="eyebrow text-champagne">Join the Circle</span>
-          <h3 className="font-serif text-2xl md:text-3xl mt-4 mb-4">Private access to new pieces.</h3>
+          <span className="eyebrow text-champagne">{newsletterTitle}</span>
+          <h3 className="font-serif text-2xl md:text-3xl mt-4 mb-4">{newsletterSubtitle}</h3>
           <p className="text-pearl/50 text-sm leading-relaxed mb-6">
             Subscribe for early releases, private events, and atelier dispatches.
           </p>
@@ -76,9 +84,9 @@ export function Footer() {
         </div>
 
         <div className="pt-10 border-t border-pearl/5 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="font-serif text-lg tracking-[0.25em] uppercase">Luxury United</div>
+          <div className="font-serif text-lg tracking-[0.25em] uppercase">{siteName}</div>
           <p className="text-[10px] tracking-[0.2em] text-pearl/30 uppercase">
-            © {new Date().getFullYear()} Luxury United International
+            {footerCopyright}
           </p>
         </div>
       </div>

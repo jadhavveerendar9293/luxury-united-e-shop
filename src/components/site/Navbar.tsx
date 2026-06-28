@@ -3,6 +3,7 @@ import { Search, ShoppingBag, Heart, User, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart, useWishlist } from "@/lib/store";
+import { useWebsiteSettings } from "@/lib/products-api";
 
 const NAV = [
   { to: "/", label: "Home" },
@@ -17,6 +18,9 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const cartCount = useCart((s) => s.items.reduce((a, b) => a + b.qty, 0));
   const wishCount = useWishlist((s) => s.ids.length);
+  const { data: settings } = useWebsiteSettings();
+
+  const siteName = settings?.site_name || "Luxury United";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -50,7 +54,7 @@ export function Navbar() {
           to="/"
           className="font-serif text-base md:text-xl tracking-[0.25em] uppercase text-pearl"
         >
-          Luxury United
+          {siteName}
         </Link>
 
         <nav className="hidden md:flex items-center gap-10">

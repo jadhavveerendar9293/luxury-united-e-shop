@@ -4,7 +4,7 @@ import { ArrowRight, Star } from "lucide-react";
 import { PageShell } from "@/components/site/PageShell";
 import { ProductGrid } from "@/components/site/ProductGrid";
 import { Reveal } from "@/components/site/Reveal";
-import { useProducts, useCategories, useCollections } from "@/lib/products-api";
+import { useProducts, useCategories, useCollections, useWebsiteSettings } from "@/lib/products-api";
 import heroImg from "@/assets/hero-necklace.jpg";
 import bannerImg from "@/assets/banner-editorial.jpg";
 
@@ -24,12 +24,20 @@ function Home() {
   const { data: products = [], isLoading } = useProducts();
   const { data: categories = [] } = useCategories();
   const { data: collections = [] } = useCollections();
+  const { data: settings } = useWebsiteSettings();
 
   const bestSellers = products
     .filter((p) => p.isBestSeller)
     .slice(0, 4);
   const featured = bestSellers.length > 0 ? bestSellers : products.slice(0, 4);
   const newArrivals = products.filter((p) => p.isNewArrival).slice(0, 4);
+
+  const heroTitle = settings?.hero_title || "Timeless";
+  const heroSubtitle = settings?.hero_subtitle || "Curated, hand-crafted pieces designed for those who seek the extraordinary.";
+  const heroCollectionName = settings?.hero_collection_name || "The Eternal Collection";
+  const heroCtaText = settings?.hero_cta_text || "Explore Now";
+  const heroCtaLink = settings?.hero_cta_link || "/shop";
+  const siteName = settings?.site_name || "Luxury United";
 
   return (
     <PageShell>
@@ -54,20 +62,25 @@ function Home() {
                   transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
                   className="max-w-lg"
                 >
-                  <p className="eyebrow text-champagne mb-6">The Eternal Collection</p>
+                  <p className="eyebrow text-champagne mb-6">{heroCollectionName}</p>
                   <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl leading-[1.02] mb-6">
-                    Timeless<br />
-                    <span className="italic text-champagne">Excellence</span>
+                    {heroTitle.split(' ').map((word, i, arr) => (
+                      i === arr.length - 1 ? (
+                        <span key={i} className="italic text-champagne">{word}</span>
+                      ) : (
+                        <span key={i}>{word} </span>
+                      )
+                    ))}
                   </h1>
                   <p className="text-pearl/60 text-sm md:text-base max-w-sm mb-8 leading-relaxed">
-                    Curated, hand-crafted pieces designed for those who seek the extraordinary.
+                    {heroSubtitle}
                   </p>
                   <div className="flex flex-wrap gap-3">
                     <Link
-                      to="/shop"
+                      to={heroCtaLink}
                       className="inline-flex items-center gap-2 bg-champagne text-obsidian px-8 py-4 eyebrow hover:bg-pearl transition-colors group"
                     >
-                      Explore Now
+                      {heroCtaText}
                       <ArrowRight className="size-3 group-hover:translate-x-1 transition-transform" />
                     </Link>
                     <Link

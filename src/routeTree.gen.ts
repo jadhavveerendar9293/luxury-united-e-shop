@@ -32,6 +32,7 @@ import { Route as ReviewProductIdRouteImport } from './routes/review.$productId'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 import { Route as OrdersIdRouteImport } from './routes/orders.$id'
 import { Route as OrderConfirmationIdRouteImport } from './routes/order-confirmation.$id'
+import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as AdminReviewsRouteImport } from './routes/admin/reviews'
 import { Route as AdminProductsRouteImport } from './routes/admin/products'
@@ -156,6 +157,11 @@ const OrderConfirmationIdRoute = OrderConfirmationIdRouteImport.update({
   path: '/order-confirmation/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
   id: '/admin/settings',
   path: '/admin/settings',
@@ -224,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/admin/products': typeof AdminProductsRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/order-confirmation/$id': typeof OrderConfirmationIdRoute
   '/orders/$id': typeof OrdersIdRoute
   '/product/$slug': typeof ProductSlugRoute
@@ -257,6 +264,7 @@ export interface FileRoutesByTo {
   '/admin/products': typeof AdminProductsRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/order-confirmation/$id': typeof OrderConfirmationIdRoute
   '/orders/$id': typeof OrdersIdRoute
   '/product/$slug': typeof ProductSlugRoute
@@ -290,6 +298,7 @@ export interface FileRoutesById {
   '/admin/products': typeof AdminProductsRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/order-confirmation/$id': typeof OrderConfirmationIdRoute
   '/orders/$id': typeof OrdersIdRoute
   '/product/$slug': typeof ProductSlugRoute
@@ -325,6 +334,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/reviews'
     | '/admin/settings'
+    | '/auth/callback'
     | '/order-confirmation/$id'
     | '/orders/$id'
     | '/product/$slug'
@@ -358,6 +368,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/reviews'
     | '/admin/settings'
+    | '/auth/callback'
     | '/order-confirmation/$id'
     | '/orders/$id'
     | '/product/$slug'
@@ -390,6 +401,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/reviews'
     | '/admin/settings'
+    | '/auth/callback'
     | '/order-confirmation/$id'
     | '/orders/$id'
     | '/product/$slug'
@@ -424,6 +436,7 @@ export interface RootRouteChildren {
   AdminProductsRoute: typeof AdminProductsRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   OrderConfirmationIdRoute: typeof OrderConfirmationIdRoute
   ProductSlugRoute: typeof ProductSlugRoute
   ReviewProductIdRoute: typeof ReviewProductIdRoute
@@ -593,6 +606,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrderConfirmationIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/settings': {
       id: '/admin/settings'
       path: '/admin/settings'
@@ -690,6 +710,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminProductsRoute: AdminProductsRoute,
   AdminReviewsRoute: AdminReviewsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   OrderConfirmationIdRoute: OrderConfirmationIdRoute,
   ProductSlugRoute: ProductSlugRoute,
   ReviewProductIdRoute: ReviewProductIdRoute,

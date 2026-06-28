@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useQuery, useQueryClient, queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 import {
   type Category,
   type Product,
@@ -221,4 +222,24 @@ export function useProductsRealtime() {
       supabase.removeChannel(channel);
     };
   }, [qc]);
+}
+
+async function fetchWebsiteSettings(): Promise<Tables<"website_settings"> | null> {
+  const { data, error } = await (supabase as any)
+    .from("website_settings")
+    .select("*")
+    .eq("id", 1)
+    .maybeSingle();
+  if (error) throw error;
+  return data as Tables<"website_settings"> | null;
+}
+
+export const websiteSettingsQueryOptions = queryOptions({
+  queryKey: ["websiteSettings"],
+  queryFn: fetchWebsiteSettings,
+  staleTime: 300_000,
+});
+
+export function useWebsiteSettings() {
+  return useQuery(websiteSettingsQueryOptions);
 }
