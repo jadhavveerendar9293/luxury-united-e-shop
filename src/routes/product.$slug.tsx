@@ -13,7 +13,7 @@ export const Route = createFileRoute("/product/$slug")({
   loader: ({ params }) => {
     const product = getProduct(params.slug);
     if (!product) throw notFound();
-    return { product };
+    return { product } as { product: NonNullable<ReturnType<typeof getProduct>> };
   },
   head: ({ loaderData }) => ({
     meta: [
