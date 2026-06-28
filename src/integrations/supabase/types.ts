@@ -266,6 +266,7 @@ export type Database = {
           payment_id: string | null
           tracking_number: string | null
           tracking_url: string | null
+          courier_name: string | null
           notes: string | null
           created_at: string
           updated_at: string
@@ -296,6 +297,7 @@ export type Database = {
           payment_id?: string | null
           tracking_number?: string | null
           tracking_url?: string | null
+          courier_name?: string | null
           notes?: string | null
           created_at?: string
           updated_at?: string
@@ -326,6 +328,7 @@ export type Database = {
           payment_id?: string | null
           tracking_number?: string | null
           tracking_url?: string | null
+          courier_name?: string | null
           notes?: string | null
           created_at?: string
           updated_at?: string

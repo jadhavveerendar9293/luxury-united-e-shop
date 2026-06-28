@@ -40,7 +40,7 @@ interface Order {
 }
 
 function OrderConfirmationPage() {
-  const { id } = Route.useRouteContext();
+  const { id } = Route.useParams();
   const navigate = useNavigate();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);

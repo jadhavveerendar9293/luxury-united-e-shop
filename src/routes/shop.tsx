@@ -5,17 +5,16 @@ import { useMemo, useState } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { PageShell, PageHeader } from "@/components/site/PageShell";
 import { ProductGrid } from "@/components/site/ProductGrid";
-import { categories, type Category } from "@/lib/products";
-import { useProducts } from "@/lib/products-api";
+import { useProducts, useCategories } from "@/lib/products-api";
 
 const searchSchema = z.object({
-  category: fallback(z.enum(["rings", "earrings", "bracelets", "necklaces", "all"]), "all").default("all"),
+  category: fallback(z.string(), "all").default("all"),
   sort: fallback(
     z.enum(["featured", "newest", "price-asc", "price-desc", "best-selling", "rating"]),
     "featured",
   ).default("featured"),
   q: fallback(z.string(), "").default(""),
-  max: fallback(z.number(), 10000).default(10000),
+  max: fallback(z.number(), 100000).default(100000),
   availability: fallback(z.enum(["all", "in-stock"]), "all").default("all"),
 });
 
@@ -35,6 +34,7 @@ function ShopPage() {
   const navigate = Route.useNavigate();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const { data: products = [], isLoading } = useProducts();
+  const { data: categories = [] } = useCategories();
 
   const filtered = useMemo(() => {
     let list = products.slice();
@@ -82,7 +82,7 @@ function ShopPage() {
   const hasFilters =
     search.category !== "all" ||
     search.q !== "" ||
-    search.max < 10000 ||
+    search.max < 100000 ||
     search.availability !== "all";
 
   return (
@@ -131,8 +131,8 @@ function ShopPage() {
               {categories.map((c) => (
                 <FilterChip
                   key={c.id}
-                  active={search.category === c.id}
-                  onClick={() => update({ category: c.id as Category })}
+                  active={search.category === c.slug}
+                  onClick={() => update({ category: c.slug })}
                 >
                   {c.name}
                 </FilterChip>
@@ -155,22 +155,22 @@ function ShopPage() {
               <input
                 type="range"
                 min={500}
-                max={10000}
-                step={100}
+                max={100000}
+                step={500}
                 value={search.max}
                 onChange={(e) => update({ max: Number(e.target.value) })}
                 className="w-full accent-champagne"
               />
               <div className="flex justify-between text-[10px] text-pearl/40 mt-2">
                 <span>$500</span>
-                <span>$10,000</span>
+                <span>$100,000</span>
               </div>
             </FilterGroup>
 
             {hasFilters && (
               <button
                 onClick={() =>
-                  update({ category: "all", q: "", max: 10000, availability: "all" })
+                  update({ category: "all", q: "", max: 100000, availability: "all" })
                 }
                 className="flex items-center gap-2 eyebrow text-champagne"
               >

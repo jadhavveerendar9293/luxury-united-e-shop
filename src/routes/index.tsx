@@ -4,8 +4,7 @@ import { ArrowRight, Star } from "lucide-react";
 import { PageShell } from "@/components/site/PageShell";
 import { ProductGrid } from "@/components/site/ProductGrid";
 import { Reveal } from "@/components/site/Reveal";
-import { categories, collections } from "@/lib/products";
-import { useProducts } from "@/lib/products-api";
+import { useProducts, useCategories, useCollections } from "@/lib/products-api";
 import heroImg from "@/assets/hero-necklace.jpg";
 import bannerImg from "@/assets/banner-editorial.jpg";
 
@@ -23,6 +22,8 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const { data: products = [], isLoading } = useProducts();
+  const { data: categories = [] } = useCategories();
+  const { data: collections = [] } = useCollections();
 
   const bestSellers = products
     .filter((p) => p.isBestSeller)
@@ -102,7 +103,7 @@ function Home() {
               <Link to="/collections" className="block group">
                 <div className="relative aspect-[3/4] overflow-hidden bg-card mb-4">
                   <img
-                    src={c.image}
+                    src={c.imageUrl || bannerImg}
                     alt={c.name}
                     loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
@@ -131,17 +132,23 @@ function Home() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {categories.map((c, i) => (
               <Reveal key={c.id} delay={i * 0.06}>
-                <Link to="/shop" search={{ category: c.id }} className="group block">
+                <Link to="/shop" search={{ category: c.slug }} className="group block">
                   <div className="aspect-square overflow-hidden bg-card mb-4">
-                    <img
-                      src={c.image}
-                      alt={c.name}
-                      loading="lazy"
-                      className="w-full h-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110"
-                    />
+                    {c.imageUrl ? (
+                      <img
+                        src={c.imageUrl}
+                        alt={c.name}
+                        loading="lazy"
+                        className="w-full h-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-pearl/10 flex items-center justify-center">
+                        <span className="text-pearl/30 text-2xl font-serif">{c.name[0]}</span>
+                      </div>
+                    )}
                   </div>
                   <p className="eyebrow text-pearl group-hover:text-champagne transition-colors">{c.name}</p>
-                  <p className="text-xs text-pearl/40 mt-1.5">{c.tagline}</p>
+                  <p className="text-xs text-pearl/40 mt-1.5">{c.tagline || c.description}</p>
                 </Link>
               </Reveal>
             ))}

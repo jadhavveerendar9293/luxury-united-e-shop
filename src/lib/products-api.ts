@@ -29,6 +29,25 @@ interface ProductRow {
   created_at: string;
 }
 
+interface CategoryRow {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  image_url: string | null;
+  tagline: string | null;
+  sort_order: number;
+}
+
+interface CollectionRow {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  image_url: string | null;
+  sort_order: number;
+}
+
 const toNum = (v: number | string | null | undefined, fallback = 0): number => {
   if (v === null || v === undefined) return fallback;
   return typeof v === "number" ? v : Number(v);
@@ -61,8 +80,50 @@ export function mapProduct(r: ProductRow): Product {
   };
 }
 
+export interface CategoryData {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  imageUrl: string | null;
+  tagline: string | null;
+  sortOrder: number;
+}
+
+export interface CollectionData {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  imageUrl: string | null;
+  sortOrder: number;
+}
+
+export function mapCategory(r: CategoryRow): CategoryData {
+  return {
+    id: r.id,
+    name: r.name,
+    slug: r.slug,
+    description: r.description,
+    imageUrl: r.image_url,
+    tagline: r.tagline,
+    sortOrder: r.sort_order,
+  };
+}
+
+export function mapCollection(r: CollectionRow): CollectionData {
+  return {
+    id: r.id,
+    name: r.name,
+    slug: r.slug,
+    description: r.description,
+    imageUrl: r.image_url,
+    sortOrder: r.sort_order,
+  };
+}
+
 async function fetchAllProducts(): Promise<Product[]> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("products")
     .select("*")
     .order("created_at", { ascending: false });
@@ -71,13 +132,31 @@ async function fetchAllProducts(): Promise<Product[]> {
 }
 
 async function fetchProductBySlug(slug: string): Promise<Product | null> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("products")
     .select("*")
     .eq("slug", slug)
     .maybeSingle();
   if (error) throw error;
   return data ? mapProduct(data as ProductRow) : null;
+}
+
+async function fetchCategories(): Promise<CategoryData[]> {
+  const { data, error } = await (supabase as any)
+    .from("categories")
+    .select("*")
+    .order("sort_order", { ascending: true });
+  if (error) throw error;
+  return (data as CategoryRow[]).map(mapCategory);
+}
+
+async function fetchCollections(): Promise<CollectionData[]> {
+  const { data, error } = await (supabase as any)
+    .from("collections")
+    .select("*")
+    .order("sort_order", { ascending: true });
+  if (error) throw error;
+  return (data as CollectionRow[]).map(mapCollection);
 }
 
 export const productsQueryOptions = queryOptions({
@@ -93,12 +172,32 @@ export const productQueryOptions = (slug: string) =>
     staleTime: 30_000,
   });
 
+export const categoriesQueryOptions = queryOptions({
+  queryKey: ["categories"],
+  queryFn: fetchCategories,
+  staleTime: 60_000,
+});
+
+export const collectionsQueryOptions = queryOptions({
+  queryKey: ["collections"],
+  queryFn: fetchCollections,
+  staleTime: 60_000,
+});
+
 export function useProducts() {
   return useQuery(productsQueryOptions);
 }
 
 export function useProduct(slug: string) {
   return useQuery(productQueryOptions(slug));
+}
+
+export function useCategories() {
+  return useQuery(categoriesQueryOptions);
+}
+
+export function useCollections() {
+  return useQuery(collectionsQueryOptions);
 }
 
 /**
