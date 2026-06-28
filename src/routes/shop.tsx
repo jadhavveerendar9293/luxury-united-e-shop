@@ -4,14 +4,19 @@ import { z } from "zod";
 import { useMemo, useState } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { PageShell, PageHeader } from "@/components/site/PageShell";
-import { ProductCard } from "@/components/site/ProductCard";
-import { products, categories, type Category } from "@/lib/products";
+import { ProductGrid } from "@/components/site/ProductGrid";
+import { categories, type Category } from "@/lib/products";
+import { useProducts } from "@/lib/products-api";
 
 const searchSchema = z.object({
   category: fallback(z.enum(["rings", "earrings", "bracelets", "necklaces", "all"]), "all").default("all"),
-  sort: fallback(z.enum(["popular", "newest", "price-asc", "price-desc"]), "popular").default("popular"),
+  sort: fallback(
+    z.enum(["featured", "newest", "price-asc", "price-desc", "best-selling", "rating"]),
+    "featured",
+  ).default("featured"),
   q: fallback(z.string(), "").default(""),
   max: fallback(z.number(), 10000).default(10000),
+  availability: fallback(z.enum(["all", "in-stock"]), "all").default("all"),
 });
 
 export const Route = createFileRoute("/shop")({
@@ -29,6 +34,7 @@ function ShopPage() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const { data: products = [], isLoading } = useProducts();
 
   const filtered = useMemo(() => {
     let list = products.slice();
@@ -36,10 +42,15 @@ function ShopPage() {
     if (search.q.trim()) {
       const q = search.q.toLowerCase();
       list = list.filter(
-        (p) => p.name.toLowerCase().includes(q) || p.collection.toLowerCase().includes(q),
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          (p.collection ?? "").toLowerCase().includes(q) ||
+          (p.sku ?? "").toLowerCase().includes(q),
       );
     }
     list = list.filter((p) => p.price <= search.max);
+    if (search.availability === "in-stock") list = list.filter((p) => p.stock > 0);
+
     switch (search.sort) {
       case "newest":
         list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -50,14 +61,29 @@ function ShopPage() {
       case "price-desc":
         list.sort((a, b) => b.price - a.price);
         break;
+      case "best-selling":
+        list.sort((a, b) => Number(b.isBestSeller) - Number(a.isBestSeller) || b.popularity - a.popularity);
+        break;
+      case "rating":
+        list.sort((a, b) => b.rating - a.rating || b.reviewsCount - a.reviewsCount);
+        break;
       default:
-        list.sort((a, b) => b.popularity - a.popularity);
+        list.sort(
+          (a, b) =>
+            Number(b.isFeatured) - Number(a.isFeatured) || b.popularity - a.popularity,
+        );
     }
     return list;
-  }, [search]);
+  }, [products, search]);
 
   const update = (patch: Partial<typeof search>) =>
     navigate({ search: (prev: typeof search) => ({ ...prev, ...patch }) });
+
+  const hasFilters =
+    search.category !== "all" ||
+    search.q !== "" ||
+    search.max < 10000 ||
+    search.availability !== "all";
 
   return (
     <PageShell>
@@ -70,7 +96,7 @@ function ShopPage() {
               type="search"
               value={search.q}
               onChange={(e) => update({ q: e.target.value })}
-              placeholder="Search pieces and collections"
+              placeholder="Search pieces, collections, SKU"
               className="w-full bg-card border border-pearl/10 pl-11 pr-4 py-3 text-sm placeholder:text-pearl/30 focus:outline-none focus:border-champagne transition-colors"
             />
           </div>
@@ -86,8 +112,10 @@ function ShopPage() {
               onChange={(e) => update({ sort: e.target.value as typeof search.sort })}
               className="bg-card border border-pearl/10 px-4 py-3 text-sm focus:outline-none focus:border-champagne"
             >
-              <option value="popular">Most Popular</option>
+              <option value="featured">Featured</option>
               <option value="newest">Newest</option>
+              <option value="best-selling">Best Selling</option>
+              <option value="rating">Highest Rated</option>
               <option value="price-asc">Price: Low → High</option>
               <option value="price-desc">Price: High → Low</option>
             </select>
@@ -111,6 +139,18 @@ function ShopPage() {
               ))}
             </FilterGroup>
 
+            <FilterGroup title="Availability">
+              <FilterChip active={search.availability === "all"} onClick={() => update({ availability: "all" })}>
+                All
+              </FilterChip>
+              <FilterChip
+                active={search.availability === "in-stock"}
+                onClick={() => update({ availability: "in-stock" })}
+              >
+                In stock only
+              </FilterChip>
+            </FilterGroup>
+
             <FilterGroup title={`Max Price · $${search.max.toLocaleString()}`}>
               <input
                 type="range"
@@ -127,9 +167,11 @@ function ShopPage() {
               </div>
             </FilterGroup>
 
-            {(search.category !== "all" || search.q || search.max < 10000) && (
+            {hasFilters && (
               <button
-                onClick={() => update({ category: "all", q: "", max: 10000 })}
+                onClick={() =>
+                  update({ category: "all", q: "", max: 10000, availability: "all" })
+                }
                 className="flex items-center gap-2 eyebrow text-champagne"
               >
                 <X className="size-3" /> Clear filters
@@ -139,18 +181,16 @@ function ShopPage() {
 
           <div>
             <p className="text-xs text-pearl/40 mb-6">{filtered.length} pieces</p>
-            {filtered.length === 0 ? (
-              <div className="py-24 text-center">
-                <p className="font-serif text-2xl mb-3">Nothing matches.</p>
-                <p className="text-pearl/50 text-sm">Try adjusting your filters.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-12">
-                {filtered.map((p, i) => (
-                  <ProductCard key={p.id} product={p} index={i} />
-                ))}
-              </div>
-            )}
+            <ProductGrid
+              products={filtered}
+              isLoading={isLoading}
+              emptyTitle={hasFilters ? "Nothing matches" : "No Products Available"}
+              emptyDescription={
+                hasFilters
+                  ? "Try adjusting your filters to discover more pieces."
+                  : "Our atelier is preparing the next collection."
+              }
+            />
           </div>
         </div>
       </section>

@@ -4,23 +4,15 @@ import { motion } from "framer-motion";
 import { Heart, ShoppingBag, Star, Truck, Shield, RotateCcw, Minus, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { PageShell } from "@/components/site/PageShell";
-import { ProductCard } from "@/components/site/ProductCard";
+import { ProductGrid } from "@/components/site/ProductGrid";
 import { Reveal } from "@/components/site/Reveal";
-import { getProduct, getRelated, type Product } from "@/lib/products";
+import { stockStatus } from "@/lib/products";
+import { useProduct, useProducts } from "@/lib/products-api";
 import { formatPrice, useCart, useWishlist } from "@/lib/store";
 
 export const Route = createFileRoute("/product/$slug")({
-  loader: ({ params }): { product: Product } => {
-    const product = getProduct(params.slug);
-    if (!product) throw notFound();
-    return { product };
-  },
-  head: ({ loaderData }) => ({
-    meta: [
-      { title: `${loaderData?.product.name} — Luxury United` },
-      { name: "description", content: loaderData?.product.description ?? "" },
-      { property: "og:image", content: loaderData?.product.images[0] ?? "" },
-    ],
+  head: ({ params }) => ({
+    meta: [{ title: `${params.slug.replace(/-/g, " ")} — Luxury United` }],
   }),
   notFoundComponent: () => (
     <PageShell>
@@ -34,25 +26,44 @@ export const Route = createFileRoute("/product/$slug")({
 });
 
 function ProductPage() {
-  const { product } = Route.useLoaderData();
+  const { slug } = Route.useParams();
+  const { data: product, isLoading } = useProduct(slug);
+  const { data: all = [] } = useProducts();
   const [activeImg, setActiveImg] = useState(0);
   const [qty, setQty] = useState(1);
   const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
   const add = useCart((s) => s.add);
   const toggleWish = useWishlist((s) => s.toggle);
-  const liked = useWishlist((s) => s.ids.includes(product.id));
+  const wishIds = useWishlist((s) => s.ids);
   const navigate = useNavigate();
 
-  const related = getRelated(product);
+  if (isLoading) {
+    return (
+      <PageShell>
+        <div className="container-luxury py-32 text-center text-pearl/40 eyebrow">Loading…</div>
+      </PageShell>
+    );
+  }
+
+  if (!product) throw notFound();
+
+  const liked = wishIds.includes(product.id);
+  const status = stockStatus(product.stock);
+  const outOfStock = status.tone === "out";
+  const related = all.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
 
   const handleAdd = () => {
+    if (outOfStock) return;
     add(product, qty);
     toast.success(`${product.name} added to bag`);
   };
   const handleBuy = () => {
+    if (outOfStock) return;
     add(product, qty);
     navigate({ to: "/checkout" });
   };
+
+  const safeImages = product.images.length > 0 ? product.images : ["/products/product-aurelian.jpg"];
 
   return (
     <PageShell>
@@ -76,35 +87,42 @@ function ProductPage() {
             >
               <motion.img
                 key={activeImg}
-                src={product.images[activeImg]}
+                src={safeImages[activeImg]}
                 alt={product.name}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4 }}
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-300"
-                style={
-                  zoom ? { transform: `scale(2)`, transformOrigin: `${zoom.x}% ${zoom.y}%` } : undefined
-                }
+                style={zoom ? { transform: `scale(2)`, transformOrigin: `${zoom.x}% ${zoom.y}%` } : undefined}
               />
+              {product.discountPercent && (
+                <span className="absolute top-4 left-4 bg-champagne text-obsidian eyebrow px-3 py-1.5">
+                  −{product.discountPercent}%
+                </span>
+              )}
             </div>
-            <div className="grid grid-cols-4 gap-3">
-              {product.images.map((img: string, i: number) => (
-                <button
-                  key={i}
-                  onClick={() => setActiveImg(i)}
-                  className={`aspect-square overflow-hidden bg-card border transition-colors ${
-                    activeImg === i ? "border-champagne" : "border-transparent"
-                  }`}
-                >
-                  <img src={img} alt="" className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
+            {safeImages.length > 1 && (
+              <div className="grid grid-cols-4 gap-3">
+                {safeImages.map((img, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveImg(i)}
+                    className={`aspect-square overflow-hidden bg-card border transition-colors ${
+                      activeImg === i ? "border-champagne" : "border-transparent"
+                    }`}
+                  >
+                    <img src={img} alt="" loading="lazy" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Details */}
           <div className="md:sticky md:top-28 md:self-start">
-            <p className="eyebrow text-champagne mb-4">{product.collection}</p>
+            {product.collection && (
+              <p className="eyebrow text-champagne mb-4">{product.collection}</p>
+            )}
             <h1 className="font-serif text-3xl md:text-5xl mb-4">{product.name}</h1>
             <div className="flex items-center gap-4 mb-6">
               <div className="flex gap-0.5 text-champagne">
@@ -115,13 +133,31 @@ function ProductPage() {
               <span className="text-xs text-pearl/50">
                 {product.rating} · {product.reviewsCount} reviews
               </span>
+              {product.sku && (
+                <span className="text-xs text-pearl/30 ml-auto">SKU {product.sku}</span>
+              )}
             </div>
-            <p className="text-2xl text-champagne mb-8">{formatPrice(product.price)}</p>
+            <div className="flex items-baseline gap-3 mb-8">
+              <p className="text-2xl text-champagne">{formatPrice(product.price)}</p>
+              {product.compareAtPrice && product.compareAtPrice > product.price && (
+                <p className="text-base text-pearl/40 line-through">
+                  {formatPrice(product.compareAtPrice)}
+                </p>
+              )}
+            </div>
             <p className="text-pearl/70 leading-relaxed mb-8">{product.description}</p>
 
             <div className="mb-8">
-              <p className="eyebrow text-pearl/60 mb-2">
-                {product.stock > 5 ? "In stock" : product.stock > 0 ? `Only ${product.stock} left` : "Sold out"}
+              <p
+                className={`eyebrow mb-2 ${
+                  status.tone === "out"
+                    ? "text-pearl/50"
+                    : status.tone === "low"
+                    ? "text-champagne"
+                    : "text-pearl/60"
+                }`}
+              >
+                {status.label}
               </p>
               <div className="h-px bg-pearl/10 relative">
                 <div
@@ -133,9 +169,17 @@ function ProductPage() {
 
             <div className="flex items-center gap-4 mb-6">
               <div className="flex items-center border border-pearl/15">
-                <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="p-3"><Minus className="size-3.5" /></button>
+                <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="p-3" disabled={outOfStock}>
+                  <Minus className="size-3.5" />
+                </button>
                 <span className="w-10 text-center text-sm">{qty}</span>
-                <button onClick={() => setQty((q) => q + 1)} className="p-3"><Plus className="size-3.5" /></button>
+                <button
+                  onClick={() => setQty((q) => Math.min(product.stock || 1, q + 1))}
+                  className="p-3"
+                  disabled={outOfStock}
+                >
+                  <Plus className="size-3.5" />
+                </button>
               </div>
               <button
                 onClick={() => toggleWish(product.id)}
@@ -150,13 +194,15 @@ function ProductPage() {
             <div className="space-y-3 mb-10">
               <button
                 onClick={handleAdd}
-                className="w-full bg-champagne text-obsidian py-4 eyebrow hover:bg-pearl transition-colors flex items-center justify-center gap-2"
+                disabled={outOfStock}
+                className="w-full bg-champagne text-obsidian py-4 eyebrow hover:bg-pearl transition-colors flex items-center justify-center gap-2 disabled:bg-pearl/10 disabled:text-pearl/40 disabled:cursor-not-allowed"
               >
-                <ShoppingBag className="size-4" /> Add to Bag
+                <ShoppingBag className="size-4" /> {outOfStock ? "Out of Stock" : "Add to Bag"}
               </button>
               <button
                 onClick={handleBuy}
-                className="w-full border border-pearl/20 py-4 eyebrow hover:bg-pearl/5 transition-colors"
+                disabled={outOfStock}
+                className="w-full border border-pearl/20 py-4 eyebrow hover:bg-pearl/5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Buy Now
               </button>
@@ -168,14 +214,16 @@ function ProductPage() {
               <Perk icon={Shield} label="Lifetime guarantee" />
             </div>
 
-            <div>
-              <h3 className="eyebrow text-pearl mb-4">Details</h3>
-              <ul className="space-y-2 text-sm text-pearl/60">
-                {product.details.map((d: string) => (
-                  <li key={d} className="flex gap-3"><span className="text-champagne">—</span>{d}</li>
-                ))}
-              </ul>
-            </div>
+            {product.details.length > 0 && (
+              <div>
+                <h3 className="eyebrow text-pearl mb-4">Details</h3>
+                <ul className="space-y-2 text-sm text-pearl/60">
+                  {product.details.map((d) => (
+                    <li key={d} className="flex gap-3"><span className="text-champagne">—</span>{d}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
 
@@ -204,9 +252,7 @@ function ProductPage() {
             <Reveal>
               <h2 className="font-serif text-3xl md:text-4xl mb-10">You may also love</h2>
             </Reveal>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-12">
-              {related.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
-            </div>
+            <ProductGrid products={related} columns="featured" />
           </section>
         )}
       </div>
