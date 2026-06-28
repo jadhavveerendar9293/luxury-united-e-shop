@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageShell, PageHeader } from "@/components/site/PageShell";
 import { useAuth, useCart, useWishlist } from "@/lib/store";
-import { products } from "@/lib/products";
+import { useProducts } from "@/lib/products-api";
 
 export const Route = createFileRoute("/account")({
   head: () => ({ meta: [{ title: "Account — Luxury United" }] }),
@@ -14,6 +14,7 @@ function AccountPage() {
   const wishlist = useWishlist((s) => s.ids);
   const cartCount = useCart((s) => s.items.length);
   const navigate = useNavigate();
+  const { data: products = [] } = useProducts();
 
   if (!user) {
     return (
