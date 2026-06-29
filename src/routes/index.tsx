@@ -21,7 +21,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const { data: products = [], isLoading } = useProducts();
+  const { data: products = [], isPending: productsLoading } = useProducts();
   const { data: categories = [] } = useCategories();
   const { data: collections = [] } = useCollections();
   const { data: settings } = useWebsiteSettings();
@@ -183,7 +183,7 @@ function Home() {
         </Reveal>
         <ProductGrid
           products={featured}
-          isLoading={isLoading}
+          isLoading={productsLoading}
           columns="featured"
           emptyTitle="No Products Available"
           emptyDescription="The collection is being prepared. Please return shortly."

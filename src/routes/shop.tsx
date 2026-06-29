@@ -33,7 +33,7 @@ function ShopPage() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const { data: products = [], isLoading } = useProducts();
+  const { data: products = [], isPending: productsLoading } = useProducts();
   const { data: categories = [] } = useCategories();
 
   const filtered = useMemo(() => {
@@ -183,7 +183,7 @@ function ShopPage() {
             <p className="text-xs text-pearl/40 mb-6">{filtered.length} pieces</p>
             <ProductGrid
               products={filtered}
-              isLoading={isLoading}
+              isLoading={productsLoading}
               emptyTitle={hasFilters ? "Nothing matches" : "No Products Available"}
               emptyDescription={
                 hasFilters

@@ -12,14 +12,14 @@ export const Route = createFileRoute("/wishlist")({
 
 function WishlistPage() {
   const ids = useWishlist((s) => s.ids);
-  const { data: products = [], isLoading } = useProducts();
+  const { data: products = [], isPending: productsLoading } = useProducts();
   const items = products.filter((p) => ids.includes(p.id));
 
   return (
     <PageShell>
       <PageHeader eyebrow="Saved" title="Wishlist" description="Pieces you're considering." />
       <section className="container-luxury pb-24 md:pb-32">
-        {!isLoading && ids.length === 0 ? (
+        {!productsLoading && ids.length === 0 ? (
           <div className="text-center py-16">
             <Heart className="size-10 text-champagne mx-auto mb-6" />
             <p className="font-serif text-2xl mb-3">Nothing saved yet</p>
@@ -34,7 +34,7 @@ function WishlistPage() {
         ) : (
           <ProductGrid
             products={items}
-            isLoading={isLoading}
+            isLoading={productsLoading}
             columns="featured"
             emptyTitle="Saved pieces unavailable"
             emptyDescription="The items you saved are no longer in the catalog."
